@@ -3,6 +3,11 @@ global.fetch = require('node-fetch');
 
 const callCognito = (userId, password, cb) => {
   const email = userId;
+  const COGNITO2 = {
+    REGION: 'ap-northeast-2',
+    USER_POOL_ID: 'ap-northeast-2_CHGQe7flY',
+    CLIENT_ID: '29ilv9idglfh0spnbe9tpfb19m',
+  }
   const COGNITO = {
     REGION: 'us-west-2',
     USER_POOL_ID: 'us-west-2_xRKVaj5ls',

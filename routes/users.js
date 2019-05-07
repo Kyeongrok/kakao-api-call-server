@@ -6,7 +6,9 @@ const Amplify = require('aws-amplify').default
 const { API, Auth } = Amplify
 
 const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
-global.fetch = require('node-fetch');
+const CognitoUserPool = AmazonCognitoIdentity.CognitoUserPool;
+const AWS = require('aws-sdk');
+
 
 const COGNITO = {
   REGION: 'us-west-2',
@@ -16,15 +18,23 @@ const COGNITO = {
 
 /* GET users listing. */
 router.post('/', function(req, res, next) {
-  console.log(JSON.stringify(req.body));
+  console.log(req.body);
+
+
+  const cognitoUserPool = new CognitoUserPool({
+    UserPoolId : COGNITO.USER_POOL_ID,
+    ClientId : COGNITO.CLIENT_ID
+  });
 
   const poolData = {
     UserPoolId : COGNITO.USER_POOL_ID,
     ClientId : COGNITO.CLIENT_ID
   }
+  console.log(poolData);
 
 
   const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+  console.log(userPool);
   const url = "https://kapi.kakao.com/v2/user/me";
   axios.get(url, {headers: {'Access-Control-Allow-Origin': '*',
       'Authorization': 'Bearer ' + req.body.access_token
@@ -32,20 +42,20 @@ router.post('/', function(req, res, next) {
     }})
     .then(res => {
       const data = res.data;
-      console.log(JSON.stringify(data));
+      console.log(data);
       const email = data['kakao_account']['email'];
 
       const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
-        Username : email,
+        Username : 'oceanfog1@gmail.com',
         Password : '1234@Aoeu',
       });
+
+
       const userData = {
-        Username : email,
+        Username : 'oceanfog1@gmail.com',
         Pool : userPool
       };
       const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
-
-      cognitoUser.setAuthenticationFlowType("CUSTOM_AUTH");
 
       cognitoUser.authenticateUser(authenticationDetails, {
         onSuccess: function (result) {
@@ -54,23 +64,13 @@ router.post('/', function(req, res, next) {
           console.log('refresh token + ' + result.getRefreshToken().getToken());
         },
         onFailure: function(err) {
+          console.log("-------error---------");
           console.log(err);
         },
-        customChallenge: function(challengeParameters) {
-          console.log("---------customChallenge---------");
-          const callback = (answer) => {
-            const challengeResponses = JSON.stringify({ answer });
-            console.log(answer);
-            cognitoUser.sendCustomChallengeAnswer(challengeResponses, this);
-          }
-        }
-      })
+      });
     })
-    .catch(e =>{
-      console.log("--------error--------");
-      console.log(e);
-    });
+    .catch(e =>{console.log(e)});
   res.send('respond with a resource');
 });
 
-module.exports = router
+module.exports = router;
