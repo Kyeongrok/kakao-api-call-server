@@ -26,6 +26,7 @@ router.post('/', function(req, res, next) {
     }})
     .then(kakaoRes => {
       const data = kakaoRes.data;
+      data.is_user = false;
       console.log(data);
       // const email = data['kakao_account']['email'];
       res.send(data);
